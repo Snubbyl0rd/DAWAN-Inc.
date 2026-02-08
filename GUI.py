@@ -151,4 +151,178 @@ class CalculatorGUI:
                 )
                 #puts the button into a grid format with rows and column
                 button.grid(row=row, column=col, padx=5, pady=5)
+    
+    #function that runs whenever a button is clicked 
+    def button_click(self, text):
+        #checks if the button clicked is 0-9
+        if text in "0123456789":
+            #adds it to display
+            self.add_number(text)
+        #checks if it was a decimal point and adds it to display
+        elif text == ".":
+            self.add_decimal()
+        #checks if it was plus, minus, multiply or divide 
+        elif text in "+-*/":
+            #saves operation 
+            self.set_operation(text)
+        #checks if the = button was clicked
+        elif text == "=":
+            #if it was, it does the calculatins
+            self.calculate()
+        #if the clear button was clicked
+        elif text == "C":
+            #it resets everything back to 0
+            self.clear()
+        #if the square root was clickedit calculated the squareroot of the number
+        elif text == "√":
+            self.square_root()
+        #if square was clicked it squares the number entered
+        elif text == "x²":
+            self.square()
+        #if any trig operations were clicked it does the calculations
+        elif text in ["sin", "cos", "tan", "arcsin", "arccos", "arctan"]:
+            self.trig_function(text)
+    
+    #function for when a number is clicked 
+    def add_number(self, num):
+        #checks if display needs to be cleared or if it shows 0 
+        if self.reset_display or self.current_input == "0":
+           #replaces whatever is on the screen with the new number, so if it
+            #displays 0and the user clicks 4, it will show 4 not 04
+            self.current_input = num
+            #the number the user clicks will get added instead of being replaced or reset
+            self.reset_display = False
+        #if display doesnt need resetting and isnt 0 
+        else:
+            #add the number to the end
+            self.current_input += num
+        #update screen to show the current number
+        self.update_display(self.current_input)
 
+    #function for decimal point
+    def add_decimal(self):
+        #checks if decimal point alreaad exists
+        if "." not in self.current_input:
+            #if decimal point doesnt exist add one
+            self.current_input += "."
+        #update screen 
+        self.update_display(self.current_input)
+    
+    #function that runs when operation buttons are clicked 
+    def set_operation(self, op):
+        #saves the currrent number on the screen as the first number and converts it to float
+        self.first_num = float(self.current_input)
+        #saves which operation the user chose to do like plus or minus
+        self.operation = op
+        #screen gets cleared when next number is clicked 
+        self.reset_display = True
+    
+    #function that handles calculations 
+    def calculate(self):
+        #if user entered a number or picked an operation 
+        if self.operation and self.first_num is not None:
+            #tries to perform the calculation if it doesnt work it wont crash
+            try:
+                #gets second number user entered
+                second_num = float(self.current_input)
+                #checks which operation the user clicked on
+                if self.operation == "+":
+                    result = self.calc.addition(self.first_num, second_num)
+                elif self.operation == "-":
+                    result = self.calc.subtraction(self.first_num, second_num)
+                elif self.operation == "*":
+                    result = self.calc.multiplication(self.first_num, second_num)
+                elif self.operation == "/":
+                    #if the second number is 0 it shows error
+                    if second_num == 0:
+                        messagebox.showerror("Cannot divide by zero")
+                        return
+                    
+                    result = self.calc.division(self.first_num, second_num)
+                    
+                #shows answer on the screen
+                self.current_input = str(result)
+                self.update_display(self.current_input)
+                #clears everthing so its ready for next calculation
+                self.first_num = None
+                self.operation = None
+                #display will clear when user enters new number
+                self.reset_display = True
+            
+            #if something goes wrong it shows error instead of crashing
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+    
+    #function for the C button
+    def clear(self):
+        #resets current number to 0
+        self.current_input = "0"
+        #erases first number and operation
+        self.first_num = None
+        self.operation = None
+        #updates the screen so the calculator displays 0 
+        self.update_display("0")
+    
+    #function that runs when user clicks on sqaure root
+    def square_root(self):
+        try:
+            #gets number on screen and turns it into float 
+            value = float(self.current_input)
+            #sends it to the square_root function in the Calc_Class so it does the math
+            result = self.calc.square_root(value)
+            #if theres an error  it shows popup
+            if result == "error":
+                messagebox.showerror("Cannot  square root negative number")
+            #if it wasnt negative it continues
+            else:
+                #turns the number to string so it can be displayed 
+                self.current_input = str(result)
+                self.update_display(self.current_input)
+                self.reset_display = True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    #function for squaring numbers
+    def square(self):
+        try:
+            #turns number into float
+            value = float(self.current_input)
+            #sends it to the square function in Calc_Class
+            result = self.calc.square(value)
+            self.current_input = str(result)
+            self.update_display(self.current_input)
+            self.reset_display = True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+    
+    #function for trig operations 
+    def trig_function(self, func):
+        try:
+            value = float(self.current_input)
+            
+            #checks if user clicked sin button
+            if func == "sin":
+                #if user clicked on sin it calcualtes sine of the number 
+                result = self.calc.sin(value)
+            elif func == "cos":
+                result = self.calc.cos(value)
+            elif func == "tan":
+                result = self.calc.tan(value)
+            elif func == "arcsin":
+                result = self.calc.arcsin(value)
+            elif func == "arccos":
+                result = self.calc.arccos(value)
+            elif func == "arctan":
+                result = self.calc.arctan(value)
+            #turn answer into string to display 
+            self.current_input = str(result)
+            self.update_display(self.current_input)
+            self.reset_display = True
+        #shows error message if anything failed
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+    
+    #function starts calculator 
+    def run(self):
+        #keeps window open until user closes it 
+        self.window.mainloop()
